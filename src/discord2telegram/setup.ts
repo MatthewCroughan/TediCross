@@ -221,27 +221,6 @@ export function setup(
 					}
 				}
 			});
-		} else if (
-			R.isNil((message.channel as TextChannel).guild) ||
-			!knownServerIds.has((message.channel as TextChannel).guild.id)
-		) {
-			// Check if it is the correct server
-			// The message is from the wrong chat. Inform the sender that this is a private bot, if they have not been informed the last minute
-			if (!antiInfoSpamSet.has(message.channel.id)) {
-				antiInfoSpamSet.add(message.channel.id);
-
-				message
-					.reply(
-						"This is an instance of a TediCross bot, bridging a chat in Telegram with one in Discord. " +
-							"If you wish to use TediCross yourself, please download and create an instance. " +
-							"See https://github.com/TediCross/TediCross"
-					)
-					// Delete it again after some time
-					.then(sleepOneMinute)
-					.then((message: any) => message.delete())
-					.catch(ignoreAlreadyDeletedError)
-					.then(() => antiInfoSpamSet.delete(message.channel.id));
-			}
 		}
 	});
 

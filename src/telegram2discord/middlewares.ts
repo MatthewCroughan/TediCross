@@ -258,43 +258,6 @@ function removeBridgesIgnoringLeaveMessages(ctx: TediCrossContext, next: () => v
  * @param ctx.reply The context's reply function
  * @param next Function to pass control to next middleware
  */
-function informThisIsPrivateBot(ctx: TediCrossContext, next: () => void) {
-	R.ifElse(
-		// If there are no bridges
-		//@ts-ignore
-		R.compose(R.isEmpty, R.path(["tediCross", "bridges"])),
-		// Inform the user, if enough time has passed since last time
-		R.when<TediCrossContext, any>(
-			// When there is no timer for the chat in the anti spam map
-			ctx => R.not(ctx.TediCross.antiInfoSpamSet.has(ctx.tediCross.message.chat.id)),
-			// Inform the chat this is an instance of TediCross
-			ctx => {
-				// Update the anti spam set
-				ctx.TediCross.antiInfoSpamSet.add(ctx.tediCross.message.chat.id);
-
-				// Send the reply
-				ctx.reply(
-					"This is an instance of a [TediCross](https://github.com/TediCross/TediCross) bot, " +
-						"bridging a chat in Telegram with one in Discord. " +
-						"If you wish to use TediCross yourself, please download and create an instance.",
-					{
-						parse_mode: "Markdown"
-					}
-				).then(msg =>
-					// Delete it again after a while
-					//@ts-ignore
-					sleepOneMinute()
-						.then(() => deleteMessage(ctx, msg))
-						.catch(ignoreAlreadyDeletedError)
-						// Remove it from the anti spam set again
-						.then(() => ctx.TediCross.antiInfoSpamSet.delete(ctx.message!.chat.id))
-				);
-			}
-		),
-		// Otherwise go to next middleware
-		next
-	)(ctx);
-}
 
 /**
  * Adds a `from` object to the tediCross context
@@ -615,7 +578,6 @@ export default {
 	removeBridgesIgnoringCommands,
 	removeBridgesIgnoringJoinMessages,
 	removeBridgesIgnoringLeaveMessages,
-	informThisIsPrivateBot,
 	addFromObj,
 	addReplyObj,
 	addForwardFrom,
